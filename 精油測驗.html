@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精油心理測驗</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for a polished look */
+        body {
+            /* Added comprehensive emoji font stack for better rendering */
+            font-family: 'Inter', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', 'Android Emoji', sans-serif;
+            background-color: #f0f4f8; /* Default fallback, will be overridden by Tailwind */
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff; /* Default fallback, will be overridden by Tailwind */
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer shadow */
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* Rounded buttons */
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #4f46e5; /* Default fallback, will be overridden by Tailwind */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca; /* Default fallback, will be overridden by Tailwind */
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: #e0e7ff; /* Default fallback, will be overridden by Tailwind */
+            color: #4f46e5; /* Default fallback, will be overridden by Tailwind */
+        }
+        .btn-secondary:hover {
+            background-color: #c7d2fe; /* Default fallback, will be overridden by Tailwind */
+            transform: translateY(-2px);
+        }
+        .radio-label {
+            display: block;
+            background-color: #f9fafb; /* Default fallback, will be overridden by Tailwind */
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb; /* Default fallback, will be overridden by Tailwind */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex; /* Use flexbox for alignment */
+            align-items: center; /* Vertically center content */
+            justify-content: flex-start; /* Align content to the start */
+            min-height: 50px; /* Ensure a minimum height for all options */
+            font-size: 1.125rem; /* Default font size for text options */
+        }
+        /* Specific style for images within radio labels for Tarot cards */
+        .radio-label.image-only img {
+            max-width: 150px; /* Larger max width for tarot card images */
+            height: auto;
+            margin-right: 0; /* No margin if only image */
+            border-radius: 0.5rem; /* Rounded corners for images */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Small shadow for images */
+        }
+        /* Style for flags */
+        .radio-label img:not(.image-only img) { /* Apply to flags, but not tarot images */
+            max-width: 40px; /* Adjusted max-width for flags */
+            height: auto;
+            margin-right: 10px; /* Space between flag and text */
+            border-radius: 0.25rem; /* Slightly rounded corners for flags */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Small shadow for flags */
+        }
+        .radio-label:hover {
+            background-color: #eff6ff; /* Default fallback, will be overridden by Tailwind */
+            border-color: #93c5fd; /* Default fallback, will be overridden by Tailwind */
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        input[type="radio"]:checked + .radio-label {
+            background-color: #e0e7ff; /* Default fallback, will be overridden by Tailwind */
+            border-color: #6366f1; /* Default fallback, will be overridden by Tailwind */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        input[type="radio"] {
+            display: none; /* Hide default radio button */
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 bg-neutral-50">
+    <div class="container bg-white text-neutral-800">
+        <h1 class="text-4xl font-bold text-center text-neutral-900 mb-8">精油心理測驗</h1>
+
+        <!-- Quiz Section (hidden by default) -->
+        <div id="quiz-section" class="hidden">
+            <p class="text-xl font-semibold text-neutral-700 mb-6" id="question-text"></p>
+            <div id="answer-options" class="space-y-4">
+                <!-- Answer options will be dynamically loaded here by JavaScript -->
+            </div>
+            <div class="mt-8 flex justify-between">
+                <button id="prev-button" class="btn bg-neutral-200 text-neutral-800 hover:bg-neutral-300 hidden">上一步</button>
+                <button id="next-button" class="btn bg-stone-800 text-white hover:bg-stone-900 ml-auto">下一步</button>
+            </div>
+        </div>
+
+        <!-- Results Section (hidden by default) -->
+        <div id="results-section" class="hidden text-center p-8 bg-neutral-100 rounded-xl shadow-lg">
+            <h2 class="text-3xl font-bold text-neutral-900 mb-6">測驗結果</h2>
+            <div class="mb-6">
+                <p class="text-xl text-neutral-800 mb-4">你的命定精油是：</p>
+                <p class="text-4xl font-extrabold text-stone-800 mb-2 flex items-center justify-center">
+                    <span id="destiny-oil-name-span"></span>
+                    <button id="explain-destiny-oil-btn" class="ml-4 btn bg-neutral-200 text-neutral-800 hover:bg-neutral-300 text-base px-3 py-1">✨ 了解更多</button>
+                </p>
+                <div id="auxiliary-oils-display" class="text-xl text-neutral-700 mt-4">
+                    <!-- Auxiliary oils will be displayed here -->
+                </div>
+            </div>
+            <p class="text-lg text-neutral-700 mb-8" id="oil-explanation"></p>
+            <!-- LLM Explanation Modal -->
+            <div id="llm-explanation-modal" class="hidden fixed inset-0 bg-neutral-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-lg p-8 max-w-2xl w-full relative">
+                    <button id="close-llm-explanation-btn" class="absolute top-4 right-4 text-neutral-500 hover:text-neutral-700 text-2xl">&times;</button>
+                    <h3 class="text-2xl font-bold text-neutral-800 mb-4" id="llm-explanation-title"></h3>
+                    <div id="llm-explanation-content" class="text-neutral-700 text-left max-h-96 overflow-y-auto">
+                        <p id="llm-loading-indicator" class="text-center text-neutral-500 hidden">載入中，請稍候...</p>
+                        <!-- LLM generated content will go here -->
+                    </div>
+                </div>
+            </div>
+            <button id="retake-button" class="btn bg-stone-800 text-white hover:bg-stone-900">重新測驗</button>
+        </div>
+
+        <!-- Start Button Section -->
+        <div id="start-section" class="text-center">
+            <button id="start-button" class="btn bg-stone-800 text-white hover:bg-stone-900 text-2xl px-8 py-4">開始測驗</button>
+        </div>
+    </div>
+
+    <script>
+        // Ensure the DOM is fully loaded before executing the script
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to DOM elements
+            const quizSection = document.getElementById('quiz-section');
+            const questionText = document.getElementById('question-text');
+            const answerOptionsDiv = document.getElementById('answer-options');
+            const prevButton = document.getElementById('prev-button');
+            const nextButton = document.getElementById('next-button');
+            const resultsSection = document.getElementById('results-section');
+            const oilExplanationText = document.getElementById('oil-explanation');
+            const retakeButton = document.getElementById('retake-button');
+            const startButton = document.getElementById('start-button');
+            const startSection = document.getElementById('start-section');
+
+            // LLM explanation modal elements
+            const llmExplanationModal = document.getElementById('llm-explanation-modal');
+            const closeLlmExplanationBtn = document.getElementById('close-llm-explanation-btn');
+            const llmExplanationTitle = document.getElementById('llm-explanation-title');
+            const llmExplanationContent = document.getElementById('llm-explanation-content');
+            const llmLoadingIndicator = document.getElementById('llm-loading-indicator');
+
+            closeLlmExplanationBtn.addEventListener('click', () => {
+                llmExplanationModal.classList.add('hidden');
+            });
+
+            // Define essential oils and their associated properties/moods.
+            // These properties are used to map quiz answers to specific oils.
+            // Consolidated properties to be 15 or less
+            const allEssentialOils = {
+                '甜橙': { properties: ['快樂', '溫暖', '活力', '清新'] },
+                '葡萄柚': { properties: ['活力', '快樂', '清新', '自信'] },
+                '檸檬': { properties: ['活力', '清新', '專注', '淨化'] },
+                '苦橙葉': { properties: ['平靜', '平衡', '專注'] },
+                '山雞椒': { properties: ['活力', '清新', '淨化', '專注'] },
+                '迷迭香': { properties: ['活力', '專注', '清晰呼吸'] },
+                '茶樹': { properties: ['淨化', '保護', '清新', '清晰呼吸'] },
+                '澳洲尤加利': { properties: ['清晰呼吸', '活力', '淨化'] },
+                '快樂鼠尾草': { properties: ['平衡', '平靜', '自信', '靈性'] },
+                '玫瑰草': { properties: ['平衡', '平靜', '清新', '溫暖'] },
+                '真正薰衣草': { properties: ['平靜', '助眠', '接地'] },
+                '甜馬鬱蘭': { properties: ['平靜', '溫暖', '助眠'] },
+                '芫荽籽': { properties: ['溫暖', '平靜', '活力'] },
+                '芹菜籽': { properties: ['淨化', '平靜'] },
+                '薄荷': { properties: ['活力', '專注', '清新', '清晰呼吸'] },
+                '依蘭': { properties: ['平衡', '快樂', '感性', '自信'] },
+                '玫瑰天竺葵': { properties: ['平衡', '快樂', '自信', '活力'] },
+                '德國洋甘菊': { properties: ['平靜', '溫暖', '接地', '保護'] },
+                '日本杉': { properties: ['接地', '平靜'] },
+                '檜木葉': { properties: ['接地', '平靜'] },
+                '檜木': { properties: ['接地', '平靜', '靈性'] },
+                '喜瑪拉雅雪松': { properties: ['接地', '靈性', '自信'] },
+                '廣藿香': { properties: ['接地', '感性', '平靜'] },
+                '澳洲檀香': { properties: ['靈性', '平靜', '接地'] },
+                '乳香': { properties: ['靈性', '接地', '平靜', '專注'] },
+                '沒藥': { properties: ['靈性', '接地', '保護', '平靜'] },
+                '欖香脂': { properties: ['靈性', '平靜', '接地', '專注'] },
+                '岩蘭草': { properties: ['接地', '平靜', '助眠'] },
+                '降香': { properties: ['溫暖', '平靜', '接地'] },
+                '穗甘松': { properties: ['接地', '靈性', '平靜', '助眠'] },
+                '薑': { properties: ['溫暖', '活力', '接地'] },
+                '黑胡椒': { properties: ['活力', '溫暖', '專注'] },
+                '胡蘿蔔籽': { properties: ['淨化', '保護'] },
+                '丁香花苞': { properties: ['保護', '活力', '溫暖'] },
+                '肉桂': { properties: ['溫暖', '保護', '活力'] },
+                '川芎': { properties: ['循環', '活力', '專注'] },
+                '艾草': { properties: ['淨化', '保護', '靈性'] },
+                '荊芥': { properties: ['淨化', '平靜'] },
+                '辛夷': { properties: ['平靜', '平衡', '清晰呼吸'] }
+            };
+
+            // Define quiz questions. Each answer has associated properties that align with essential oil benefits.
+            const questionsData = [
+                {
+                    question: '當生活步調讓你感到有些喘不過氣時，你會怎麼讓自己放鬆下來呢？',
+                    answers: [
+                        { text: '找個安靜的小角落，沉浸在自己的世界裡', properties: ['平靜', '放鬆'] },
+                        { text: '尋找一些能點燃熱情，讓自己重新充滿活力的事', properties: ['活力'] },
+                        { text: '專心投入到某個任務中，用成就感來緩解壓力', properties: ['專注'] },
+                        { text: '整理周遭環境，讓混亂的心情也跟著歸位', properties: ['淨化'] }
+                    ]
+                },
+                {
+                    question: '每天早晨，你最期待用什麼樣的心情迎接新的一天？',
+                    answers: [
+                        { text: '輕柔地醒來，享受一份內心的寧靜與和諧', properties: ['平靜', '放鬆'] },
+                        { text: '感受清爽的微風，讓身心都甦醒過來', properties: ['清新', '活力'] },
+                        { text: '思緒清晰，準備好迎接今天的每一個挑戰', properties: ['專注'] },
+                        { text: '帶著滿滿的喜悅和積極，迎接亮晃晃的陽光', properties: ['快樂', '活力'] }
+                    ]
+                },
+                {
+                    question: '當身處熱鬧或擁擠的場合時，你通常會怎麼調適自己？',
+                    answers: [
+                        { text: '試著讓心境保持平穩，避免被外界過度影響', properties: ['平靜', '平衡'] },
+                        { text: '保持警覺，讓自己頭腦清醒地應對', properties: ['專注', '活力'] },
+                        { text: '保持樂觀開朗，享受當下的氛圍', properties: ['快樂', '活力', '自信'] },
+                        { text: '儘量保持自己的小空間，讓身心感到潔淨', properties: ['淨化', '保護'] }
+                    ]
+                },
+                {
+                    question: '某天晚上，你突然感到一陣莫名的失落或情緒低潮，你會怎麼溫柔地陪伴自己度過這個時刻？',
+                    answers: [
+                        { text: '為自己泡一杯熱飲，窩在沙發上感受溫暖與安心', properties: ['溫暖', '平靜'] },
+                        { text: '聽一些輕快的音樂，或是看一部能讓自己開心的影片', properties: ['快樂', '活力'] },
+                        { text: '靜下心來，寫下自己的感受，理清思緒', properties: ['專注', '平靜'] },
+                        { text: '點上香氛蠟燭，想像負面情緒隨著煙霧消散，讓空間煥然一新', properties: ['淨化', '靈性'] }
+                    ]
+                },
+                {
+                    question: '用直覺選出最能觸動你的塔羅牌圖片：',
+                    isImageQuestion: true, // Flag to indicate this question uses images
+                    answers: [
+                        { text: '', imageUrl: 'https://imageproxy.pixnet.cc/imgproxy?url=https://pic.pimg.tw/sunny1229/1419490925-93935120.jpg&ver=20250714', properties: ['活力', '清新', '快樂'] }, // Removed text
+                        { text: '', imageUrl: 'https://imageproxy.pixnet.cc/imgproxy?url=https://pic.pimg.tw/sunny1229/1419491114-1786430932_n.jpg&ver=20250714', properties: ['平靜', '靈性', '專注'] }, // Removed text
+                        { text: '', imageUrl: 'https://imageproxy.pixnet.cc/imgproxy?url=https://pic.pimg.tw/sunny1229/1419491264-1171758288.jpg&ver=20250714', properties: ['接地', '自信', '專注'] }, // Removed text
+                        { text: '', imageUrl: 'https://imageproxy.pixnet.cc/imgproxy?url=https://pic.pimg.tw/sunny1229/1419491395-4143983563.jpg&ver=20250714', properties: ['平衡', '快樂', '感性'] }, // Removed text
+                        { text: '', imageUrl: 'https://imageproxy.pixnet.cc/imgproxy?url=https://pic.pimg.tw/sunny1229/1419492221-4124757887.jpg&ver=20250714', properties: ['靈性', '平靜', '淨化'] } // Removed text
+                    ]
+                },
+                {
+                    question: '當身體感到疲憊或肌肉有些僵硬時，你會怎麼溫柔地緩解不適？',
+                    answers: [
+                        { text: '選擇溫和放鬆的方式，像是泡個熱水澡或輕柔按摩', properties: ['平靜', '放鬆'] },
+                        { text: '稍微活動一下筋骨，讓身體重新充滿活力', properties: ['活力', '清新'] },
+                        { text: '透過熱敷或促進循環的方式，讓身體暖和起來', properties: ['溫暖', '循環'] },
+                        { text: '靜坐、冥想，想像身體正被淨化，排除一天的疲憊和雜質', properties: ['淨化', '靈性', '專注'] }
+                    ]
+                },
+                {
+                    question: '如果可以選擇一個國家旅遊，你會選擇哪裡，讓身心得到最美好的滋養？',
+                    isImageQuestion: true, // Mark this question as image-based
+                    answers: [
+                        { text: '日本：體驗寧靜的禪意與精緻的文化，感受內心的平靜與秩序', imageUrl: 'https://hackmdio.github.io/emoji-datasource-finder/emoji-google/1f1ef-1f1f5.png', properties: ['平靜', '平衡', '專注'] },
+                        { text: '義大利：沉浸在熱情浪漫的氛圍中，享受美食與藝術的愉悅', imageUrl: 'https://hackmdio.github.io/emoji-datasource-finder/emoji-google/1f1ee-1f1f9.png', properties: ['活力', '感性', '快樂'] },
+                        { text: '冰島：探索壯麗的自然風光，感受純淨與獨特的療癒', imageUrl: 'https://hackmdio.github.io/emoji-datasource-finder/emoji-google/1f1ee-1f1f8.png', properties: ['淨化', '平靜', '清新'] },
+                        { text: '巴西：投入熱情奔放的慶典，讓活力與自由充滿身心', imageUrl: 'https://hackmdio.github.io/emoji-datasource-finder/emoji-google/1f1e7-1f1f7.png', properties: ['活力', '快樂'] },
+                        { text: '瑞士：置身於阿爾卑斯山的懷抱，感受湖面平穩、安定與大自然的療癒', imageUrl: 'https://hackmdio.github.io/emoji-datasource-finder/emoji-google/1f1e8-1f1ed.png', properties: ['平靜', '接地', '淨化'] },
+                        { text: '尼泊爾：踏上探索佛學與靈性的旅程，感受大地與心靈的連結', imageUrl: 'https://hackmdio.github.io/emoji-datasource-finder/emoji-google/1f1f3-1f1f5.png', properties: ['靈性', '接地', '平靜'] }
+                    ]
+                },
+                {
+                    question: '當感覺呼吸不順暢或鼻子有些堵塞時，你希望精油能如何幫助你？',
+                    answers: [
+                        { text: '涼涼的氣味讓呼吸道暢通，感受清爽的呼吸', properties: ['清晰呼吸', '清新', '活力'] },
+                        { text: '淨化周圍的空氣，提供一份安心的保護', properties: ['淨化', '保護'] },
+                        { text: '柔和地溫暖胸腔，輕輕緩解不適感', properties: ['溫暖', '平靜'] }, // Changed text
+                        { text: '直接提振精神，讓思緒更集中清晰', properties: ['專注', '活力'] }
+                    ]
+                },
+                {
+                    question: '你最希望精油能為你帶來哪種溫暖的內在感受或能量？',
+                    answers: [
+                        { text: '感覺更踏實、穩定和有安全感', properties: ['接地', '自信'] },
+                        { text: '感受喜悅、激發創造力與情感的流動', properties: ['快樂', '感性', '靈感'] },
+                        { text: '增強自信心，感受個人力量與行動力', properties: ['自信', '活力'] },
+                        { text: '尋求內心的和諧與平衡，讓情緒穩定', properties: ['平衡', '平靜'] },
+                        { text: '連結更高層次的直覺，感受靈性啟發', properties: ['靈性', '專注'] }
+                    ]
+                },
+                {
+                    question: '根據你目前的身心狀態，你覺得自己最需要哪種「能量」的補充？',
+                    answers: [
+                        { text: '像春天般生長、舒展，充滿決策力的能量', properties: ['專注', '活力'] }, // 木
+                        { text: '像夏天般熱情、喜悅，充滿溝通的能量', properties: ['快樂', '溫暖', '活力', '自信'] }, // 火
+                        { text: '像大地般穩定、滋養，充滿接納的能量', properties: ['接地', '平靜', '溫暖'] }, // 土
+                        { text: '像秋天般淨化、清晰，充滿紀律的能量', properties: ['淨化', '專注', '清晰呼吸'] }, // 金
+                        { text: '像冬天般智慧、流動，能適應變化的能量', properties: ['平靜', '接地', '助眠', '靈性'] } // 水
+                    ]
+                }
+            ];
+
+            let currentQuestionIndex = 0; // Tracks the current question being displayed
+            let userAnswers = []; // Stores the index of the selected answer for each question
+            let availableOils = {}; // Stores the essential oils available for recommendation (now always all defined oils)
+            let quizQuestions = []; // Stores the questions for the quiz
+
+            // Custom descriptions for each essential oil (more lively)
+            const customOilDescriptions = {
+                '甜橙': '陽光般的甜橙，帶來滿滿的快樂與活力，讓空間充滿清新溫暖的氣息，驅散陰霾。',
+                '葡萄柚': '清新活力的葡萄柚，能提振精神，帶來自信與淨化能量，讓您感到輕盈舒暢。',
+                '檸檬': '清新的檸檬，能幫助您集中專注，同時帶來快樂與淨化的力量，讓思緒更清晰。',
+                '苦橙葉': '溫柔的苦橙葉，能平衡情緒，帶來平靜與放鬆，幫助您在忙碌中找到內心的寧靜。',
+                '山雞椒': '充滿活力的山雞椒，以其清新淨化的特質，幫助您提振精神，專注於當下。',
+                '迷迭香': '振奮的迷迭香，能幫助您提升專注力，清晰呼吸，讓思緒如清風般流暢。',
+                '茶樹': '純淨的茶樹，以其強大的淨化與保護力量，帶來清新潔淨的感受，守護您的空間。',
+                '澳洲尤加利': '清爽的澳洲尤加利，能幫助您清晰呼吸，帶來活力與淨化，讓身心煥然一新。',
+                '快樂鼠尾草': '平衡的快樂鼠尾草，能穩定情緒，帶來平靜與自信，激發內在的靈性與創造力。',
+                '玫瑰草': '溫暖的玫瑰草，能平衡身心，帶來平靜與清新，讓您在放鬆中感受滋潤。',
+                '真正薰衣草': '經典的真正薰衣草，以其深層的平靜與放鬆功效，幫助您安然入睡，感受大地般的安定。',
+                '甜馬鬱蘭': '溫暖的甜馬鬱蘭，帶來深層的平靜與放鬆，是您安穩入眠，舒緩身心的好夥伴。',
+                '芫荽籽': '溫暖的芫荽籽，能帶來平靜與活力，讓您在舒適中感受身心的平衡。',
+                '芹菜籽': '淨化的芹菜籽，以其獨特的平靜力量，幫助您清除雜念，回歸內在的清澈。',
+                '薄荷': '清涼的薄荷，能迅速提振活力，提升專注力，讓您清晰呼吸，精神為之一振。',
+                '依蘭': '感性的依蘭，能平衡情緒，帶來快樂與自信，讓您在平靜中感受愉悅的浪漫氛圍。',
+                '玫瑰天竺葵': '甜美的玫瑰天竺葵，能平衡情緒，帶來快樂與自信，讓您充滿活力，散發迷人魅力。',
+                '德國洋甘菊': '溫和的德國洋甘菊，帶來深層的平靜與溫暖，幫助您接地，感受被保護的安心。',
+                '日本杉': '沉穩的日本杉，讓您感受大地般的接地與平靜，帶來內心的安定。',
+                '檜木葉': '清新的檜木葉，帶來深層的接地與平靜，讓您感受森林的安穩氣息。',
+                '檜木': '穩重的檜木，以其獨特的靈性與接地力量，帶來深層的平靜與安定。',
+                '喜瑪拉雅雪松': '厚實的喜瑪拉雅雪松，帶來深層的接地與靈性連結，提升自信與內在力量。',
+                '廣藿香': '深沉的廣藿香，能幫助您接地，帶來感性與平靜，讓您感受內心的安定。',
+                '澳洲檀香': '神聖的澳洲檀香，引導您進入冥想與靈性空間，帶來深層的平靜與接地。',
+                '乳香': '古老的乳香，能連結靈性，幫助您接地，帶來深層的平靜與專注，感受內在的安定。',
+                '沒藥': '神秘的沒藥，以其保護與靈性力量，幫助您接地，帶來深層的平靜。',
+                '欖香脂': '清新的欖香脂，能提升靈性，幫助您接地與專注，帶來內心的平靜。',
+                '岩蘭草': '深邃的岩蘭草，帶來強烈的接地與平靜，幫助您安穩入眠，感受大地的滋養。',
+                '降香': '溫暖的降香，帶來平靜與接地，讓您感受身心的安定與舒適。',
+                '穗甘松': '古老的穗甘松，能連結靈性，幫助您接地，帶來深層的平靜與助眠效果。',
+                '薑': '辛辣的薑，帶來溫暖與活力，幫助您接地，感受內在的熱情。',
+                '黑胡椒': '熱情的黑胡椒，能提振活力，帶來溫暖與專注，激發您的內在力量。',
+                '胡蘿蔔籽': '純粹的胡蘿蔔籽，以其淨化與保護力量，幫助您煥然一新。',
+                '丁香花苞': '溫暖的丁香花苞，帶來保護與活力，讓您充滿力量，迎接挑戰。',
+                '肉桂': '溫暖的肉桂，帶來保護與活力，讓您感受身心的熱情與振奮。',
+                '川芎': '獨特的川芎，能促進循環，帶來活力與專注，讓思緒更清晰。',
+                '艾草': '神秘的艾草，以其淨化與保護力量，連結靈性，引導您進入夢境。',
+                '荊芥': '溫和的荊芥，帶來淨化與平靜，幫助您舒緩身心，回歸自然。',
+                '辛夷': '清雅的辛夷，能平衡情緒，帶來平靜與清晰呼吸，讓您感受內心的和諧。'
+            };
+
+            /**
+             * Initializes the quiz by setting up available oils and displaying the first question.
+             * It now directly uses all defined essential oils for the quiz.
+             */
+            function initializeQuiz() {
+                availableOils = { ...allEssentialOils }; // Directly use all defined essential oils
+                quizQuestions = [...questionsData]; // Use a copy of the questions data
+                currentQuestionIndex = 0;
+                userAnswers = []; // Clear previous answers
+
+                showQuestion(); // Display the first question
+                // Transition UI sections
+                startSection.classList.add('hidden');
+                quizSection.classList.remove('hidden');
+            }
+
+            /**
+             * Displays the current question and its answer options.
+             * It also handles pre-selecting answers if the user navigates back.
+             */
+            function showQuestion() {
+                const question = quizQuestions[currentQuestionIndex];
+                questionText.textContent = `${currentQuestionIndex + 1}. ${question.question}`;
+                answerOptionsDiv.innerHTML = ''; // Clear previously loaded options
+
+                question.answers.forEach((answer, index) => {
+                    const inputId = `answer-${index}`;
+                    const radioWrapper = document.createElement('div');
+                    radioWrapper.classList.add('fade-in'); // Apply fade-in animation for smooth transition
+
+                    let labelContent;
+                    // Check if it's an image question (Tarot cards or Countries)
+                    if (question.isImageQuestion) {
+                        // For Tarot cards (Question 5, index 4), only display image
+                        if (currentQuestionIndex === 4) {
+                            labelContent = `<img src="${answer.imageUrl}" alt="${answer.text}" onerror="this.onerror=null;this.src='https://placehold.co/100x150/CCCCCC/000000?text=圖片載入失敗';" class="image-only">`;
+                        } else {
+                            // For country flags (Question 7, index 6), display image and text
+                            labelContent = `<img src="${answer.imageUrl}" alt="${answer.text}" onerror="this.onerror=null;this.src='https://placehold.co/40x30/CCCCCC/000000?text=無法顯示';"><span>${answer.text}</span>`;
+                        }
+                    } else {
+                        // For all other questions, display text directly
+                        labelContent = answer.text;
+                    }
+
+                    radioWrapper.innerHTML = `
+                        <input type="radio" id="${inputId}" name="answer" value="${index}">
+                        <label for="${inputId}" class="radio-label bg-neutral-50 border-neutral-300 hover:bg-neutral-100 hover:border-neutral-400">
+                            ${labelContent}
+                        </label>
+                    `;
+                    answerOptionsDiv.appendChild(radioWrapper);
+                });
+
+                // If the user has already answered this question, pre-select their choice
+                if (userAnswers[currentQuestionIndex] !== undefined) {
+                    const selectedInput = document.getElementById(`answer-${userAnswers[currentQuestionIndex]}`);
+                    if (selectedInput) {
+                        selectedInput.checked = true;
+                    }
+                }
+
+                // Manage visibility of "Previous" and "Next/Submit" buttons
+                prevButton.classList.toggle('hidden', currentQuestionIndex === 0);
+                nextButton.textContent = currentQuestionIndex === quizQuestions.length - 1 ? '提交' : '下一步';
+            }
+
+            /**
+             * Handles the click event for the "Next" or "Submit" button.
+             * Validates if an answer is selected, stores it, and moves to the next question or calculates results.
+             */
+            function handleNextButtonClick() {
+                const selectedOption = document.querySelector('input[name="answer"]:checked');
+                if (!selectedOption) {
+                    // Use a custom message box instead of alert() for better UX
+                    alert('請選擇一個答案！'); // For this example, using alert, but ideally a custom modal.
+                    return;
+                }
+
+                userAnswers[currentQuestionIndex] = parseInt(selectedOption.value); // Store the selected answer index
+
+                if (currentQuestionIndex < quizQuestions.length - 1) {
+                    currentQuestionIndex++;
+                    showQuestion(); // Move to the next question
+                } else {
+                    calculateResults(); // If it's the last question, calculate and display results
+                }
+            }
+
+            /**
+             * Handles the click event for the "Previous" button.
+             * Moves back to the previous question.
+             */
+            function handlePrevButtonClick() {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    showQuestion(); // Go back to the previous question
+                }
+            }
+
+            /**
+             * Calls the Gemini API to generate a detailed explanation for an essential oil.
+             * @param {string} oilName - The name of the essential oil.
+             */
+            async function generateOilExplanation(oilName) {
+                llmExplanationTitle.textContent = `${oilName} 精油詳細解釋`;
+                llmExplanationContent.innerHTML = ''; // Clear previous content
+                llmLoadingIndicator.classList.remove('hidden'); // Show loading indicator
+                llmExplanationModal.classList.remove('hidden'); // Show modal
+
+                const prompt = `請提供關於「${oilName}」精油的詳細解釋，內容應包含：
+1.  主要功效與身心靈效益： 針對情緒、身體和精神層面。
+2.  常見用途： 例如擴香、塗抹、香氛噴霧等建議。
+3.  香氣描述： 具體描述其香氣特徵。
+請以溫和、專業的語氣撰寫，字數約200-300字。`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will provide this at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        // Remove asterisks from the generated text
+                        const text = result.candidates[0].content.parts[0].text.replace(/\*/g, '');
+                        llmExplanationContent.innerHTML = text.replace(/\n/g, '<br>'); // Display with line breaks
+                    } else {
+                        llmExplanationContent.textContent = '無法生成精油解釋，請稍後再試。';
+                        console.error('Gemini API response structure unexpected:', result);
+                    }
+                } catch (error) {
+                    llmExplanationContent.textContent = '生成精油解釋時發生錯誤。';
+                    console.error('Error calling Gemini API:', error);
+                } finally {
+                    llmLoadingIndicator.classList.add('hidden'); // Hide loading indicator
+                }
+            }
+
+            /**
+             * Calculates the quiz results based on user answers and available essential oils.
+             * It scores each oil based on how many of its properties match the selected answers.
+             */
+            function calculateResults() {
+                const oilScores = {};
+                // Initialize scores for all available oils to zero
+                for (const oilName in availableOils) {
+                    oilScores[oilName] = 0;
+                }
+
+                // Iterate through user's answers and increment scores for matching oil properties
+                userAnswers.forEach((answerIndex, qIndex) => {
+                    const question = quizQuestions[qIndex];
+                    const selectedAnswer = question.answers[answerIndex];
+
+                    selectedAnswer.properties.forEach(prop => {
+                        for (const oilName in availableOils) {
+                            if (availableOils[oilName].properties.includes(prop)) {
+                                oilScores[oilName]++;
+                            }
+                        }
+                    });
+                });
+
+                // Add a small random perturbation to scores to break ties and increase diversity
+                const perturbedScores = {};
+                for (const oilName in oilScores) {
+                    // Add a random value between 0 and 0.49 to each score.
+                    // This ensures that original higher scores generally win, but close scores can be randomized.
+                    perturbedScores[oilName] = oilScores[oilName] + Math.random() * 0.49;
+                }
+
+                // Convert scores to an array of {name, score} objects for sorting
+                let sortedOils = Object.keys(perturbedScores).map(oilName => ({
+                    name: oilName,
+                    score: perturbedScores[oilName]
+                }));
+
+                // Sort oils by score in descending order
+                sortedOils.sort((a, b) => b.score - a.score);
+
+                let destinyOil = null;
+                let auxiliaryOils = [];
+                let explanation = '';
+
+                if (sortedOils.length > 0) {
+                    destinyOil = sortedOils[0].name; // Highest scoring oil is the destiny oil
+
+                    // Collect auxiliary oils (up to 2)
+                    // We need to be careful not to pick the same oil if scores are tied.
+                    // Iterate through sortedOils, skipping the destiny oil.
+                    for (let i = 1; i < sortedOils.length && auxiliaryOils.length < 2; i++) {
+                        // Only add if score is positive (meaning it was actually matched)
+                        // And if it's not the same as the destiny oil (though sorting should handle this)
+                        if (sortedOils[i].score > 0 && sortedOils[i].name !== destinyOil) {
+                            auxiliaryOils.push(sortedOils[i].name);
+                        }
+                    }
+                }
+
+                // Custom descriptions for each essential oil (more lively)
+                const customOilDescriptions = {
+                    '甜橙': '陽光般的甜橙，帶來滿滿的快樂與活力，讓空間充滿清新溫暖的氣息，驅散陰霾。',
+                    '葡萄柚': '清新活力的葡萄柚，能提振精神，帶來自信與淨化能量，讓您感到輕盈舒暢。',
+                    '檸檬': '清新的檸檬，能幫助您集中專注，同時帶來快樂與淨化的力量，讓思緒更清晰。',
+                    '苦橙葉': '溫柔的苦橙葉，能平衡情緒，帶來平靜與放鬆，幫助您在忙碌中找到內心的寧靜。',
+                    '山雞椒': '充滿活力的山雞椒，以其清新淨化的特質，幫助您提振精神，專注於當下。',
+                    '迷迭香': '振奮的迷迭香，能幫助您提升專注力，清晰呼吸，讓思緒如清風般流暢。',
+                    '茶樹': '純淨的茶樹，以其強大的淨化與保護力量，帶來清新潔淨的感受，守護您的空間。',
+                    '澳洲尤加利': '清爽的澳洲尤加利，能幫助您清晰呼吸，帶來活力與淨化，讓身心煥然一新。',
+                    '快樂鼠尾草': '平衡的快樂鼠尾草，能穩定情緒，帶來平靜與自信，激發內在的靈性與創造力。',
+                    '玫瑰草': '溫暖的玫瑰草，能平衡身心，帶來平靜與清新，讓您在放鬆中感受滋潤。',
+                    '真正薰衣草': '經典的真正薰衣草，以其深層的平靜與放鬆功效，幫助您安然入睡，感受大地般的安定。',
+                    '甜馬鬱蘭': '溫暖的甜馬鬱蘭，帶來深層的平靜與放鬆，是您安穩入眠，舒緩身心的好夥伴。',
+                    '芫荽籽': '溫暖的芫荽籽，能帶來平靜與活力，讓您在舒適中感受身心的平衡。',
+                    '芹菜籽': '淨化的芹菜籽，以其獨特的平靜力量，幫助您清除雜念，回歸內在的清澈。',
+                    '薄荷': '清涼的薄荷，能迅速提振活力，提升專注力，讓您清晰呼吸，精神為之一振。',
+                    '依蘭': '感性的依蘭，能平衡情緒，帶來快樂與自信，讓您在平靜中感受愉悅的浪漫氛圍。',
+                    '玫瑰天竺葵': '甜美的玫瑰天竺葵，能平衡情緒，帶來快樂與自信，讓您充滿活力，散發迷人魅力。',
+                    '德國洋甘菊': '溫和的德國洋甘菊，帶來深層的平靜與溫暖，幫助您接地，感受被保護的安心。',
+                    '日本杉': '沉穩的日本杉，讓您感受大地般的接地與平靜，帶來內心的安定。',
+                    '檜木葉': '清新的檜木葉，帶來深層的接地與平靜，讓您感受森林的安穩氣息。',
+                    '檜木': '穩重的檜木，以其獨特的靈性與接地力量，帶來深層的平靜與安定。',
+                    '喜瑪拉雅雪松': '厚實的喜瑪拉雅雪松，帶來深層的接地與靈性連結，提升自信與內在力量。',
+                    '廣藿香': '深沉的廣藿香，能幫助您接地，帶來感性與平靜，讓您感受內心的安定。',
+                    '澳洲檀香': '神聖的澳洲檀香，引導您進入冥想與靈性空間，帶來深層的平靜與接地。',
+                    '乳香': '古老的乳香，能連結靈性，幫助您接地，帶來深層的平靜與專注，感受內在的安定。',
+                    '沒藥': '神秘的沒藥，以其保護與靈性力量，幫助您接地，帶來深層的平靜。',
+                    '欖香脂': '清新的欖香脂，能提升靈性，幫助您接地與專注，帶來內心的平靜。',
+                    '岩蘭草': '深邃的岩蘭草，帶來強烈的接地與平靜，幫助您安穩入眠，感受大地的滋養。',
+                    '降香': '溫暖的降香，帶來平靜與接地，讓您感受身心的安定與舒適。',
+                    '穗甘松': '古老的穗甘松，能連結靈性，幫助您接地，帶來深層的平靜與助眠效果。',
+                    '薑': '辛辣的薑，帶來溫暖與活力，幫助您接地，感受內在的熱情。',
+                    '黑胡椒': '熱情的黑胡椒，能提振活力，帶來溫暖與專注，激發您的內在力量。',
+                    '胡蘿蔔籽': '純粹的胡蘿蔔籽，以其淨化與保護力量，幫助您煥然一新。',
+                    '丁香花苞': '溫暖的丁香花苞，帶來保護與活力，讓您充滿力量，迎接挑戰。',
+                    '肉桂': '溫暖的肉桂，帶來保護與活力，讓您感受身心的熱情與振奮。',
+                    '川芎': '獨特的川芎，能促進循環，帶來活力與專注，讓思緒更清晰。',
+                    '艾草': '神秘的艾草，以其淨化與保護力量，連結靈性，引導您進入夢境。',
+                    '荊芥': '溫和的荊芥，帶來淨化與平靜，幫助您舒緩身心，回歸自然。',
+                    '辛夷': '清雅的辛夷，能平衡情緒，帶來平靜與清晰呼吸，讓您感受內心的和諧。'
+                };
+
+
+                // Display the destiny oil
+                document.getElementById('destiny-oil-name-span').textContent = destinyOil;
+                document.getElementById('explain-destiny-oil-btn').onclick = () => generateOilExplanation(destinyOil);
+
+                // Display auxiliary oils
+                const auxiliaryOilsDisplay = document.getElementById('auxiliary-oils-display');
+                auxiliaryOilsDisplay.innerHTML = ''; // Clear previous auxiliary oils
+
+                if (auxiliaryOils.length > 0) {
+                    let auxHtml = '<p class="text-xl text-neutral-700">你的輔助精油是：</p>'; // Changed text
+                    auxiliaryOils.forEach(oil => {
+                        auxHtml += `<p class="text-3xl font-extrabold text-neutral-700 flex items-center justify-center mt-2">
+                                        <span>${oil}</span>
+                                        <button class="ml-4 btn bg-neutral-200 text-neutral-800 hover:bg-neutral-300 text-base px-3 py-1 explain-aux-oil-btn" data-oil-name="${oil}">✨ 了解更多</button>
+                                    </p>`;
+                    });
+                    auxiliaryOilsDisplay.innerHTML = auxHtml;
+
+                    // Add event listeners for auxiliary oil buttons
+                    document.querySelectorAll('.explain-aux-oil-btn').forEach(button => {
+                        button.onclick = (event) => {
+                            const oilName = event.target.dataset.oilName;
+                            generateOilExplanation(oilName);
+                        };
+                    });
+                } else {
+                    auxiliaryOilsDisplay.innerHTML = '<p class="text-xl text-neutral-700">目前沒有明確的輔助精油推薦。</p>';
+                }
+
+                // Construct the overall explanation based on the determined oils
+                if (destinyOil) {
+                    explanation += `你的命定精油是「${destinyOil}」。${customOilDescriptions[destinyOil]}`;
+
+                    if (auxiliaryOils.length === 1) {
+                        explanation += `<br><br>你的輔助精油是：「${auxiliaryOils[0]}」。${customOilDescriptions[auxiliaryOils[0]]}`;
+                    } else if (auxiliaryOils.length >= 2) {
+                        explanation += `<br><br>你的輔助精油有兩款：「${auxiliaryOils[0]}」和「${auxiliaryOils[1]}」。`;
+                        explanation += `其中，「${auxiliaryOils[0]}」${customOilDescriptions[auxiliaryOils[0]]} `;
+                        explanation += `而「${auxiliaryOils[1]}」${customOilDescriptions[auxiliaryOils[1]]} `;
+                        explanation += `<br><br>你可以嘗試將命定精油與其中一款或兩款輔助精油進行複方調配，創造出獨一無二的祕密香氣配方！`;
+                    }
+                } else {
+                    // Fallback if no oils could be recommended (should be rare with this logic)
+                    destinyOil = '薰衣草'; // Default fallback
+                    explanation = `根據你的回答，我們建議你嘗試使用：「${destinyOil}」精油。它以其放鬆和鎮靜的特性而聞名。`;
+                }
+
+                // Display the results
+                oilExplanationText.innerHTML = explanation;
+
+                // Transition UI sections to show results
+                quizSection.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+            }
+
+            /**
+             * Resets the quiz to its initial state, allowing the user to retake it.
+             */
+            function resetQuiz() {
+                currentQuestionIndex = 0;
+                userAnswers = [];
+                resultsSection.classList.add('hidden');
+                startSection.classList.remove('hidden');
+            }
+
+            // Attach event listeners to buttons
+            startButton.addEventListener('click', initializeQuiz);
+            nextButton.addEventListener('click', handleNextButtonClick);
+            prevButton.addEventListener('click', handlePrevButtonClick);
+            retakeButton.addEventListener('click', resetQuiz);
+        });
+    </script>
+</body>
+</html>
